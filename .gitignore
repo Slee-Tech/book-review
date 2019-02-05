@@ -1,3 +1,4 @@
 setup.env
 /flask_session
 /.vscode
+/__pycache__
