@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Books found
+{% endblock %}
+
+{% block main %}
+<ul class="list-group">
+   
+    {% for book in books %}
+    <li class="list-group-item">
+        <a href="#">{{ book.title }}</a>
+    </li>
+
+    {% endfor %}
+</ul>
+    
+    
+{% endblock %}

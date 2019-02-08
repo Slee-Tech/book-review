@@ -128,6 +128,23 @@ def register():
     else:
         return render_template("register.html")
 
+@app.route("/search", methods=["GET", "POST"])
+def search():
+    if request.method == "POST":
+        if not request.form.get("search_books"):
+            return render_template("error.html", error="No book entered")
+        books = request.form.get("search_books") + "%"
+
+        results = db.execute("SELECT title FROM books WHERE isbn LIKE :search OR author LIKE :search OR title LIKE :search", {"search":books}).fetchall()
+        #results = db.execute("SELECT title FROM books WHERE author LIKE :search", {"search":books}).fetchall()
+        db.commit()
+        if not results:
+            return render_template("error.html", error="No results or query failed")
+        return render_template("books.html", books=results)
+        
+    return render_template("search.html")
+
+
 
 
 
