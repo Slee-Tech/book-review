@@ -9,7 +9,7 @@
    
     {% for book in books %}
     <li class="list-group-item">
-        <a href="#">{{ book.title }}</a>
+        <a href="{{ url_for('book', book_title=book.title) }}">{{ book.title }}</a> 
     </li>
 
     {% endfor %}

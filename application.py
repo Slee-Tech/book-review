@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
+from helpers import lookup
 
 #from helpers import apology
 
@@ -14,6 +15,8 @@ app = Flask(__name__)
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is not set")
+
+API_KEY = os.getenv("KEY")
 
 # Configure session to use filesystem
 app.config["SESSION_PERMANENT"] = False
@@ -143,6 +146,44 @@ def search():
         return render_template("books.html", books=results)
         
     return render_template("search.html")
+
+@app.route("/search/<string:book_title>",  methods=["GET","POST"] )
+def book(book_title):
+    book_info = db.execute("SELECT * FROM books WHERE title = :title", {"title":book_title}).fetchone()
+    db.commit()
+    if book_info is None:
+        return render_template("error.html", error = "Sorry no details for this title.") 
+    book_reviews = db.execute("SELECT review FROM reviews JOIN books ON reviews.isbn = books.isbn WHERE reviews.isbn = :b_isbn", {"b_isbn":book_info["isbn"]}).fetchall()
+    if book_reviews is None:
+        book_reviews="No reviews found."
+
+    goodreads_info = lookup(API_KEY, book_info["isbn"])
+    #print(goodreads_info)
+    return render_template("book.html", info=book_info, reviews=book_reviews, gr=goodreads_info)
+    
+    
+
+
+@app.route("/rating/<string:book_isbn>", methods=["POST"])
+def rating(book_isbn):
+    if not request.form.get("rate"):
+        return render_template("error.html", error="No rating submitted.")
+    if not request.form.get("review"):
+        return render_template("error.html", error="No review submitted.")
+    
+    rated = request.form.get("rate")
+    review = request.form.get("review")
+    isbn = book_isbn
+    id = session["user_id"]
+
+    submit_review = db.execute("INSERT INTO reviews (isbn, user_id, rating, review) VALUES(:_isbn, :userid, :user_rating, :user_review)", {"_isbn":isbn, "userid":id, "user_rating":rated,"user_review":review})
+    db.commit()
+    if not submit_review:
+        return render_template("error.html", error="There was an error submitting the review.")
+    return render_template("error.html", error="Your review was successfully submitted.")
+
+
+
 
 
 

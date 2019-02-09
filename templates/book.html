@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Books found
+{% endblock %}
+
+{% block main %}
+<ul class="list-group">
+   
+    <li class="list-group-item bg-light">ISBN: {{ info.isbn }}</li>
+    <li class="list-group-item bg-light">Book Title: {{ info.title}}</li>
+    <li class="list-group-item bg-light">Author: {{ info.author}}</li>
+    <li class="list-group-item bg-light">Year Published: {{ info.year }}</li>
+   
+</ul>
+
+<div class="mt-3 mb-3 p-2">
+    <h1 class="mt-3">Data about this book from GoodReads API:</h1>
+    <p>{{ gr["books"][0]["average_rating"] }}</p>
+    <p>{{ gr["books"][0]["work_ratings_count"] }}</p>
+<div></div>
+
+<div class="mt-3 mb-3 p-2">
+<h1 class="mt-3">Reviews left for this book:</h1>
+{% for b_review in reviews %}
+    <div class="row mt-3 mb-3 ">
+    <div class="col-12 border border-secondary mt-2 mb-2 p-4">{{ b_review.review }} </div>
+</div>
+</div>
+{% endfor %}
+<h5 class="mt-4 mb-4">Read this book? Leave a rating and review.</h5>
+<form action="{{ url_for('rating', book_isbn=info.isbn) }}" method="post">
+   
+    <label class="radio-inline p-1">
+        <input type="radio" name="rate" value="1" checked>1
+      </label>
+      <label class="radio-inline p-1">
+        <input type="radio" name="rate" value="2">2
+      </label>
+      <label class="radio-inline p-1">
+        <input type="radio" name="rate" value="3">3
+      </label>
+      <label class="radio-inline p-1">
+        <input type="radio" name="rate" value="4">4
+      </label>
+      <label class="radio-inline p-1">
+        <input type="radio" name="rate" value="5">5
+      </label><br>
+
+      <h5>Leave a review</h5>
+        <textarea class="form-control mb-2 p-2" name="review" rows="5"></textarea><br>
+        
+    <button class="btn btn-success" type="submit">Leave Review</button>
+</form>
+    
+    
+{% endblock %}
