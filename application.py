@@ -2,6 +2,7 @@ import os
 
 from flask import Flask, session, flash, redirect, render_template, request, session
 from flask_session import Session
+from flask import jsonify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from werkzeug.exceptions import default_exceptions
@@ -181,6 +182,24 @@ def rating(book_isbn):
     if not submit_review:
         return render_template("error.html", error="There was an error submitting the review.")
     return render_template("error.html", error="Your review was successfully submitted.")
+
+
+@app.route("/api/<string:isbn_num>")
+def book_api(isbn_num):
+    
+    book = db.execute("SELECT * FROM books WHERE isbn = :isbn_n", {"isbn_n":isbn_num}).fetchone()
+    review = db.execute("SELECT AVG(CAST(rating as INT)) AS average, COUNT(review) AS total FROM reviews WHERE isbn = :isbn_n", {"isbn_n":isbn_num}).fetchone()
+    
+    if book is None:
+        return jsonify({"error": "Invalid ISBN"}), 422
+    return jsonify({
+        "title":book["title"],
+        "author":book["author"],
+        "year":book["year"],
+        "isbn":book["isbn"],
+        "average_score": round(review["average"],2),
+        "review_count": review["total"]
+    })
 
 
 
